@@ -24,4 +24,5 @@ This is a C++ Command Line Interface (CLI) project that functions as a search en
 
    For example, using g++ on Linux or macOS:
    ```bash
-   g++ main.cpp -o search_engine
+   g++ -o main main.cpp $(pkg-config --cflags --libs gumbo) -lcurl
+

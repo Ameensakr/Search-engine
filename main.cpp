@@ -69,7 +69,8 @@ int main() {
 
         map<int, int> freq_words;
         for (auto search_index: user_req) {
-            auto _setOfPages = inverted_index[search_index];
+
+            auto _setOfPages = invertedIndex.whereWordExist(search_index , 0);
             for (auto page: _setOfPages) {
                 freq_words[page]++;
             }

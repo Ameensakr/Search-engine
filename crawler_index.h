@@ -8,18 +8,20 @@
 #include <sstream>
 #include "stopwords.h"
 #include "traverse.h"
+#include "trie.h"
 
 using namespace std;
 int cnt = 1;
 map<int, string> id;
-map<string, set<int>> inverted_index;
+
 const string http = "http";
 
 
 const int LIMIT = 100 , LIMIT_WORDS = 500;
 vector<string> links;
 string tii ;
-
+trie invertedIndex; // for every word stored the number of pages appers in it
+int numberOfCurrentWords = 0;
 string extractPlainText(GumboNode *node) {
     if (node->type == GUMBO_NODE_TEXT) {
         return node->v.text.text;
@@ -47,9 +49,14 @@ string extractPlainText(GumboNode *node) {
                 // change word to its root
                 word = root(word);
                 // store it
-                inverted_index[word].insert(cnt);
 
-                if(inverted_index.size() > LIMIT_WORDS)break;
+                if(!invertedIndex.wordExist(word , 0))
+                {
+                    invertedIndex.insert(word , 0 , cnt);
+                    numberOfCurrentWords++;
+                }
+
+                if(numberOfCurrentWords > LIMIT_WORDS)break;
             }
         }
         return "";
@@ -108,14 +115,14 @@ size_t WriteCallback(void *contents, size_t size, size_t nmemb, std::string *out
 void make_it() {
     queue<string> q;
     q.push("https://en.wikipedia.org/wiki/Football");
-    set<string> s;
-    s.insert("https://en.wikipedia.org/wiki/Football");
+
+    string start = "https://en.wikipedia.org/wiki/Football";
+    set<string>s;
+    s.insert(start);
+    int numberOfTakenLinks = 1;
     while (!q.empty()) {
 
         string currLink = q.front();
-
-
-
         q.pop();
         CURL *curl = curl_easy_init();
         if (!curl) {
@@ -159,8 +166,9 @@ void make_it() {
         curl_easy_cleanup(curl);
 
         for (auto it: links) {
-            if (!s.count(it) && s.size() < LIMIT)
-                q.push(it), s.insert(it);
+            if (!s.count(it ) && numberOfTakenLinks < LIMIT)
+                q.push(it), s.insert(it );
+            numberOfTakenLinks++;
         }
         links.clear();
         links.resize(0);

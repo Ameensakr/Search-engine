@@ -1,59 +1,68 @@
 #include <iostream>
 #include <map>
 #include <string>
+#include <set>
 
 using namespace std;
 
-class trieNode
-{
-public:
-    map<char , trieNode*>child;
-    bool isEndOfWord;
-    trieNode() : isEndOfWord(false){}
-};
+const int MAX_CHAR = 26;
+struct trie {
+    trie* child[MAX_CHAR];
+    bool isLeaf;
+    set<int>st , temp;
 
-class trie
-{
-private:
-    trieNode* root;
-public:
-    trie(){
-        root = new trieNode();
+
+    trie() {
+        for (int i = 0; i < MAX_CHAR; ++i) {
+            child[i] = 0;
+        }
+        isLeaf = 0;
     }
 
-    void insert(const string &str)
-    {
-        trieNode* current = root;
-        for(auto &c : str)
+    void insert(string &str , int idxOfStr , int indexOfPage) {
+        if(idxOfStr == str.size())
         {
-            if(!current->child.count(c))
-            {
-                current->child[c] = new trieNode();
-            }
-            current = current->child[c];
+            isLeaf = 1;
+            st.insert(indexOfPage);
         }
-        current->isEndOfWord = true;
+        else {
+            int cur = str[idxOfStr] - 'a';
+            if(child[cur] == 0 )
+                child[cur] = new trie();
+            child[cur]->insert(str ,idxOfStr + 1, indexOfPage);
+        }
     }
 
-    bool search(const string &str)
-    {
-        trieNode* current = root;
-        for(auto &c : str)
-        {
-            if(!current->child.count(c))return false;
-            current = current->child[c];
-        }
-        return current->isEndOfWord;
+    bool wordExist(string &str , int idxOfStr) {
+        if(idxOfStr == str.size())
+            return isLeaf;
+
+        int cur = str[idxOfStr] - 'a';
+        if(child[cur] == 0 )
+            return false;	// such path don't exist
+
+        return child[cur]->wordExist(str ,idxOfStr + 1);
     }
-    bool isPrefix(const string &str)
-    {
-        trieNode* current = root;
-        for(auto &c : str)
-        {
-            if(!current->child.count(c))return false;
-            current = current->child[c];
-        }
-        return true;
+    set<int> whereWordExist(string &str , int idxOfStr) {
+        if(idxOfStr == str.size())
+            return st;
+
+        int cur = str[idxOfStr] - 'a';
+        if(child[cur] == 0 )
+            return temp;	// such path don't exist
+
+        return child[cur]->whereWordExist(str ,idxOfStr + 1);
+    }
+
+    bool prefixExist(char* str) {
+        if(*str == '\0')
+            return true;
+
+        int cur = *str - 'a';
+        if(child[cur] == 0 )
+            return false;	// such path don't exist
+
+        return child[cur]->prefixExist(str+1);
     }
 };
 

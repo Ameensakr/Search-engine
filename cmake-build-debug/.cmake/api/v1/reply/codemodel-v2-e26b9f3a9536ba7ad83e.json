@@ -49,12 +49,12 @@
 	"kind" : "codemodel",
 	"paths" : 
 	{
-		"build" : "/home/amigoo/CLionProjects/search-engine/cmake-build-debug",
-		"source" : "/home/amigoo/CLionProjects/search-engine"
+		"build" : "/home/ibrahem/search-engine/cmake-build-debug",
+		"source" : "/home/ibrahem/search-engine"
 	},
 	"version" : 
 	{
 		"major" : 2,
-		"minor" : 6
+		"minor" : 7
 	}
 }

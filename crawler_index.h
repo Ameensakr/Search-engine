@@ -17,9 +17,12 @@ map<int, string> id;
 const string http = "http";
 
 
-const int LIMIT = 100 , LIMIT_WORDS = 500;
+const int LIMIT_LINKS = 100 , LIMIT_WORDS = 100000;
+const int LIMIT_OF_WORDS_IN_PAGE = 1000;
+int number_of_taken_words_in_page = 0;
+int numberOfTakenLinks = 0;
 vector<string> links;
-string tii ;
+string title ;
 trie invertedIndex; // for every word stored the number of pages appers in it
 int numberOfCurrentWords = 0;
 string extractPlainText(GumboNode *node) {
@@ -44,19 +47,16 @@ string extractPlainText(GumboNode *node) {
                 }
                 while (word.back() < 'a' || word.back() > 'z')word.pop_back();
                 if (stopWords.count(word) || word.size() == 0)continue;
-
-
                 // change word to its root
                 word = root(word);
                 // store it
-
-                if(!invertedIndex.wordExist(word , 0))
-                {
+                if(numberOfCurrentWords > LIMIT_WORDS||number_of_taken_words_in_page>LIMIT_OF_WORDS_IN_PAGE)break;
                     invertedIndex.insert(word , 0 , cnt);
+                    number_of_taken_words_in_page++;
                     numberOfCurrentWords++;
-                }
 
-                if(numberOfCurrentWords > LIMIT_WORDS)break;
+
+
             }
         }
         return "";
@@ -73,11 +73,11 @@ void extractLinks(GumboNode *node) {
 
     if (node->v.element.tag == GUMBO_TAG_A) {
         GumboAttribute *href = gumbo_get_attribute(&node->v.element.attributes, "href");
-        if (href && links.size() < LIMIT) {
+        if (href && links.size() < LIMIT_LINKS) {
             string link = href->value;
             if(link.substr(0 , 4) == http)
                 links.push_back(link);
-        } else if (links.size() >= LIMIT)return;
+        } else if (links.size() >= LIMIT_LINKS||numberOfCurrentWords>=LIMIT_WORDS)return;
     }
     GumboVector *children = &node->v.element.children;
     for (unsigned int i = 0; i < children->length; ++i) {
@@ -91,7 +91,7 @@ void ExtractTitle(const GumboNode* node) {
         if (node->v.element.children.length > 0) {
             const GumboNode* text = static_cast<GumboNode*>(node->v.element.children.data[0]);
             if (text->type == GUMBO_NODE_TEXT) {
-                tii = text->v.text.text;
+                title = text->v.text.text;
             }
         }
     }
@@ -114,16 +114,15 @@ size_t WriteCallback(void *contents, size_t size, size_t nmemb, std::string *out
 
 void make_it() {
     queue<string> q;
-    q.push("https://en.wikipedia.org/wiki/Football");
-
-    string start = "https://en.wikipedia.org/wiki/Football";
+    q.push("https://en.wikipedia.org/wiki/Food");
+    string start = q.front();
     set<string>s;
     s.insert(start);
-    int numberOfTakenLinks = 1;
     while (!q.empty()) {
 
         string currLink = q.front();
         q.pop();
+        numberOfTakenLinks++;
         CURL *curl = curl_easy_init();
         if (!curl) {
             std::cerr << "Failed to initialize libcurl." << std::endl;
@@ -150,15 +149,12 @@ void make_it() {
             // Traverse the GumboOutput to extract links.
             ExtractTitle(output->root);
 
-
-            id[cnt] = (string)(tii + ": " + currLink);
-            cnt++;
+            id[cnt] = (string)(title + ": " + currLink);
 
             extractLinks(output->root);
-
-
+            number_of_taken_words_in_page=0;
             string temp = extractPlainText(output->root);
-
+            cnt++;
             gumbo_destroy_output(&kGumboDefaultOptions, output);
         }
 
@@ -166,10 +162,11 @@ void make_it() {
         curl_easy_cleanup(curl);
 
         for (auto it: links) {
-            if (!s.count(it ) && numberOfTakenLinks < LIMIT)
+            if (!s.count(it ) && numberOfTakenLinks < LIMIT_LINKS||numberOfCurrentWords<LIMIT_WORDS)
                 q.push(it), s.insert(it );
-            numberOfTakenLinks++;
         }
+        if(numberOfTakenLinks > LIMIT_LINKS||numberOfCurrentWords>LIMIT_WORDS)break;
+
         links.clear();
         links.resize(0);
     }

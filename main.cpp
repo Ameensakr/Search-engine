@@ -12,7 +12,6 @@
 using namespace std;
 
 
-
 int main() {
     make_it();
     init();
@@ -21,11 +20,10 @@ int main() {
 
     cout << "To close program type (-1)\n";
     cout << "you can write what you want to search about here: ";
-
-
     // taking search query from the user
     string user_text;
     getline(cin, user_text);
+
     while (user_text != "-1") {
 
         for (int j = 0; j < user_text.size(); ++j) {
@@ -46,12 +44,10 @@ int main() {
             if (stopWords.count(word) || word.size() == 0)continue;
 
             //correct
-            string temp ;
-            for(auto &it : englishWords)
-            {
-                int dif = correct(word , it);
-                if(dif < ans)
-                {
+            string temp;
+            for (auto &it: englishWords) {
+                int dif = correct(word, it);
+                if (dif < ans) {
                     ans = dif;
                     temp = it;
                 }
@@ -63,16 +59,15 @@ int main() {
             // change word to its root
             word = root(word);
             user_req.push_back(word);
-//            cout << word << endl;
         }
 
 
         map<int, int> freq_words;
         for (auto search_index: user_req) {
 
-            auto _setOfPages = invertedIndex.whereWordExist(search_index , 0);
-            for (auto page: _setOfPages) {
-                freq_words[page]++;
+            auto _setOfPages = invertedIndex.whereWordExist(search_index);
+            for (auto [page,freq]: _setOfPages) {
+                freq_words[page]+=freq;
             }
         }
         vector<pair<int, int>> to_sort;
@@ -83,15 +78,16 @@ int main() {
         int num_of_page = 1;
 
         for (int i = 0; i < to_sort.size(); ++i) {
-
             string link = id[to_sort[i].second];
             cout << num_of_page++ << "- ";
             cout << link << "\n\n";
         }
+
         cout << "To close program type (-1)\n";
         cout << "you can write what you want to search about here: ";
         getline(cin, user_text);
     }
+
     cout << "Tank U for using our search engine.\n";
 
 

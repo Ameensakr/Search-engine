@@ -1,3 +1,3 @@
-/home/amigoo/CLionProjects/search-engine/cmake-build-debug/CMakeFiles/search_engine.dir
-/home/amigoo/CLionProjects/search-engine/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/amigoo/CLionProjects/search-engine/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/ibrahem/search-engine/cmake-build-debug/CMakeFiles/search_engine.dir
+/home/ibrahem/search-engine/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/ibrahem/search-engine/cmake-build-debug/CMakeFiles/rebuild_cache.dir

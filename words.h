@@ -7,8 +7,7 @@
 std::vector<std::string> englishWords;
 
 
-void init()
-{
+void init() {
     std::ifstream inputFile("words.txt");
     if (inputFile.is_open()) {
         std::string word;
@@ -20,26 +19,42 @@ void init()
     }
 }
 
-int solve(int i , int j , string &s1 , string &s2 , vector<vector<int>>&dp)
-{
-    if(i < 0)return j + 1;
-    if(j < 0)return i + 1;
-    int &ret = dp[i][j] ;
-    if(ret != -1)return ret;
-    if(s1[i] == s2[j])return ret = solve(i - 1 , j - 1 , s1 , s2 , dp);
-    return ret = min({1 + solve(i - 1 , j , s1 , s2 , dp), 1 + solve(i - 1 , j - 1, s1 , s2 , dp) , 1 + solve(i , j - 1 , s1 , s2 , dp)});
+int solve(string &s1, string &s2) {
+    int n = s1.size(), m = s2.size();
+    vector<vector<int>> dp(n + 1, vector<int>(m + 1));
+
+    // Base cases
+    for (int i = 0; i <= n; i++) {
+        dp[i][0] = i;
+    }
+    for (int j = 0; j <= m; j++) {
+        dp[0][j] = j;
+    }
+
+    // Fill DP table
+    for (int i = 1; i <= n; i++) {
+        for (int j = 1; j <= m; j++) {
+            if (s1[i - 1] == s2[j - 1]) {
+                dp[i][j] = dp[i - 1][j - 1];
+            } else {
+                dp[i][j] = 1 + min({
+                                           dp[i - 1][j],    // deletion
+                                           dp[i - 1][j - 1],  // replacement
+                                           dp[i][j - 1]     // insertion
+                                   });
+            }
+        }
+    }
+
+    return dp[n][m];
 }
 
 
-int correct(string &s1 , string &s2)
-{
+int correct(string &s1, string &s2) {
     string ret;
-    while( !s2.empty() && s2.back() == ' ')s2.pop_back();
+    while (!s2.empty() && s2.back() == ' ')s2.pop_back();
+    return solve(s1, s2);
 
-    int n = (int)s1.size() , m = (int)s2.size();
-    vector<vector<int>>dp(n , vector<int>(m , -1));
-    int num = solve(n-1,m-1,s1,s2,dp);
-    return num;
 }
 
 
